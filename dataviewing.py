@@ -3,10 +3,7 @@ import skimage,skimage.io,skimage.color,skimage.transform
 import sklearn
 import pylab as plt
 import os
-import shutil
-import scipy.misc
-from scipy import ndimage
-import numpy as np
+import seaborn as sb
 
 def resize_dataset():
     for label in os.listdir("Data/imgs/train"):
