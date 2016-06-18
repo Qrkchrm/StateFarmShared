@@ -3,21 +3,33 @@ import skimage,skimage.io,skimage.color,skimage.transform
 import sklearn
 import pylab as plt
 import os
-import seaborn as sb
+#import seaborn as sb
+
 
 def resize_dataset():
-    for label in os.listdir("Data/imgs/train"):
-        for img in os.listdir("Data/imgs/train/"+label):
-            if not os.path.exists("Data/imgs_small/train/"+label+"/"+img):
+    for imlabel in os.listdir("Data/imgs/train"):
+        for img in os.listdir("Data/imgs/train/"+imlabel):
+            if not os.path.exists("Data/imgs_small/train/"+imlabel+"/"+img):
                 try:
-                    im=skimage.io.imread("Data/imgs/train/"+label+"/"+img)
+                    im=skimage.io.imread("Data/imgs/train/"+imlabel+"/"+img)
                     im=skimage.color.rgb2gray(im)
                     im=skimage.transform.resize(im,(64,64))
-                    if not os.path.exists("Data/imgs_small/train/"+label):
-                        os.makedirs("Data/imgs_small/train/"+label)
-                    skimage.io.imsave("Data/imgs_small/train/"+label+"/"+img,im)
+                    if not os.path.exists("Data/imgs_small/train/"+imlabel):
+                        os.makedirs("Data/imgs_small/train/"+imlabel)
+                    skimage.io.imsave("Data/imgs_small/train/"+imlabel+"/"+img,im)
                 except:
                     print(img)
+    for img in os.listdir("Data/imgs/test/"):
+        if not os.path.exists("Data/imgs_small/test/" + img):
+            try:
+                im = skimage.io.imread("Data/imgs/test/" + img)
+                im = skimage.color.rgb2gray(im)
+                im = skimage.transform.resize(im, (64, 64))
+                if not os.path.exists("Data/imgs_small/test/"):
+                    os.makedirs("Data/imgs_small/test/")
+                skimage.io.imsave("Data/imgs_small/test/" + img, im)
+            except:
+                print(img)
 
 class DataViewer:
     def __init__self(self):
