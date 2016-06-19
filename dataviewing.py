@@ -4,10 +4,15 @@ import sklearn
 import pylab as plt
 import os
 import numpy as np
+from sklearn import cross_validation
+import tflearn
 #import seaborn as sb
 
 
+# Contains functions for formatting data, encoding labels and viewing images.
+
 def resize_dataset():
+    nsize=64
     for imlabel in os.listdir("Data/imgs/train"):
         for img in os.listdir("Data/imgs/train/"+imlabel):
             if not os.path.exists("Data/imgs_small/train/"+imlabel+"/"+img):
@@ -25,7 +30,7 @@ def resize_dataset():
             try:
                 im = skimage.io.imread("Data/imgs/test/" + img)
                 im = skimage.color.rgb2gray(im)
-                im = skimage.transform.resize(im, (64, 64))
+                im = skimage.transform.resize(im, (nsize, nsize))
                 if not os.path.exists("Data/imgs_small/test/"):
                     os.makedirs("Data/imgs_small/test/")
                 skimage.io.imsave("Data/imgs_small/test/" + img, im)
@@ -50,6 +55,21 @@ def convert_to_numpy():
     np.save("Data/dataset.npy",dataset)
     np.save("Data/datalabels.npy",datalabels)
 
-class DataViewer:
-    def __init__self(self):
-        pass
+class learner:
+    def __init__(self):
+        self.dataset=np.load("Data/dataset.npy")
+        self.datalabels=np.load("Data/datalabels.npy")
+        self.trainset=None
+        self.testset=None
+        self.validset=None
+        self.trainlabels=None
+        self.testlabels=None
+        self.validlabels=None
+        print(self.dataset)
+    def randomize_separate_sets(self):
+        self.trainset,self.testset,self.trainlabels,self.testlabels=cross_validation.train_test_split(self.dataset,self.datalabels,test_size=.2)
+        print(np.shape(self.trainset),np.shape(self.testset))
+
+if __name__=="__main__":
+    l=learner()
+    l.randomize_separate_sets()
