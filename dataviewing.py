@@ -88,6 +88,10 @@ class learner:
         self.validset=None
         self.validlabels=None
         self.trainset,self.testset,self.trainlabels,self.testlabels=cross_validation.train_test_split(self.dataset,self.datalabels,test_size=.2)
+        #self.trainset = self.trainset.reshape([-1, 128, 128, 1])
+        #self.testset = self.testset.reshape([-1, 128, 128, 1])
+        self.trainset/=255
+        self.testset/=255
     def simple_learn(self):
         tflearn.init_graph()
         net=tflearn.input_data(shape=[None,64,64,3])
@@ -123,21 +127,23 @@ class learner:
         imgprep = tflearn.data_preprocessing.ImagePreprocessing()
         imgprep.add_featurewise_zero_center()
         imgprep.add_featurewise_stdnorm()
-        network = tflearn.layers.core.input_data([None, 128, 128, 1])  # ,data_preprocessing=imgprep)
-        network = tflearn.layers.conv.conv_2d(network, 32, 9, activation='relu', regularizer="L2")
+        network = tflearn.layers.core.input_data([None, 128, 128],dtype=np.float32)  # ,data_preprocessing=imgprep)
+        network = tflearn.reshape(network, new_shape=[-1])
+        network = tflearn.reshape(network, new_shape=[-1,128,128,1])
+        network = tflearn.layers.conv.conv_2d(network, 32, 5, activation='relu', regularizer="L2")
         network = tflearn.layers.conv.max_pool_2d(network, 2)
         #network = tflearn.layers.local_response_normalization(network)
-        network = tflearn.layers.conv.conv_2d(network, 64, 9, activation='relu', regularizer="L2")
-        network = tflearn.layers.conv.conv_2d(network, 64, 9, activation='relu', regularizer="L2")
+        network = tflearn.layers.conv.conv_2d(network, 64, 5, activation='relu', regularizer="L2")
+        network = tflearn.layers.conv.conv_2d(network, 64, 5, activation='relu', regularizer="L2")
         network = tflearn.layers.conv.max_pool_2d(network, 2)
-        network = tflearn.fully_connected(network, 512, activation='relu')
-        network = tflearn.layers.core.dropout(network, 0.5)
+        network = tflearn.layers.core.fully_connected(network, 128, activation='relu')
+        network = tflearn.layers.core.dropout(network, 0.8)
         network = tflearn.layers.core.fully_connected(network, 10, activation='softmax')
         network = tflearn.layers.estimator.regression(network, optimizer='adam', loss='categorical_crossentropy',
                                                       learning_rate=.0001)
         self.network = network
-        model = tflearn.DNN(network, tensorboard_verbose=1, checkpoint_path='first_test.tf1.ckpt')
-        model.load("Models/sam_dan.tfl")
+        model = tflearn.DNN(network, tensorboard_verbose=2, checkpoint_path='first_test.tf1.ckpt')
+        #model.load("Models/sam_dan.tfl")
         model.fit(self.trainset, self.trainlabels, n_epoch=50, shuffle=True,
                   validation_set=(self.testset, self.testlabels), show_metric=True, batch_size=100, snapshot_epoch=True,
                   run_id='First_test')
