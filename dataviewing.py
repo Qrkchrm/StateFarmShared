@@ -148,6 +148,32 @@ class learner:
                   validation_set=(self.testset, self.testlabels), show_metric=True, batch_size=100, snapshot_epoch=True,
                   run_id='First_test')
         model.save("Models/sam_dan.tfl")
+
+    def sam_dan_2(self):
+        imgprep = tflearn.data_preprocessing.ImagePreprocessing()
+        imgprep.add_featurewise_zero_center()
+        imgprep.add_featurewise_stdnorm()
+        network = tflearn.layers.core.input_data([None, 128, 128], dtype=np.float32)  # ,data_preprocessing=imgprep)
+        network = tflearn.reshape(network, new_shape=[-1])
+        network = tflearn.reshape(network, new_shape=[-1, 128, 128, 1])
+        network = tflearn.layers.conv.conv_2d(network, 32, 5, strides=2, activation='relu', regularizer="L2")
+        network = tflearn.layers.conv.max_pool_2d(network, 2)
+        # network = tflearn.layers.local_response_normalization(network)
+        #network = tflearn.layers.conv.conv_2d(network, 64, 5, activation='relu', regularizer="L2")
+        network = tflearn.layers.conv.conv_2d(network, 32, 3, activation='relu', regularizer="L2")
+        network = tflearn.layers.conv.max_pool_2d(network, 2)
+        #network = tflearn.layers.core.fully_connected(network, 128, activation='relu')
+        network = tflearn.layers.core.dropout(network, 0.5)
+        network = tflearn.layers.core.fully_connected(network, 10, activation='softmax', regularizer="L1")
+        network = tflearn.layers.estimator.regression(network, optimizer='adam', loss='categorical_crossentropy',
+                                                      learning_rate=.0001)
+        self.network = network
+        model = tflearn.DNN(network, tensorboard_verbose=2, checkpoint_path='first_test.tf1_2.ckpt')
+        # model.load("Models/sam_dan.tfl")
+        model.fit(self.trainset, self.trainlabels, n_epoch=50, shuffle=True,
+                  validation_set=(self.testset, self.testlabels), show_metric=True, batch_size=100, snapshot_epoch=True,
+                  run_id='First_test')
+        model.save("Models/sam_dan.tfl_2")
     def run_model(self,modelname="Models/sam_dan.tfl"):
         self.unknownset=np.load("Data/dataset_test_grey.npy")
         model=tflearn.DNN(self.network)
@@ -195,7 +221,7 @@ if __name__=="__main__":
     #convert_to_numpy()
     #convert_to_numpy_testset()
     l=learner()
-    l.sam_dan()
+    l.sam_dan_2()
     #format_test()
     l.run_model()
     for_kaggle()
