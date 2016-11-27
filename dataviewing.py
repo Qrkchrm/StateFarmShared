@@ -85,13 +85,13 @@ class learner:
         print(np.shape(self.dataset))
         self.unknownset=None
         print(self.datalabels)
-        self.validset=None
-        self.validlabels=None
-        self.trainset,self.testset,self.trainlabels,self.testlabels=cross_validation.train_test_split(self.dataset,self.datalabels,test_size=.2)
+        #self.validset=None
+        #self.validlabels=None
+        #self.trainset,self.testset,self.trainlabels,self.testlabels=cross_validation.train_test_split(self.dataset,self.datalabels,test_size=.2)
         #self.trainset = self.trainset.reshape([-1, 128, 128, 1])
         #self.testset = self.testset.reshape([-1, 128, 128, 1])
-        self.trainset/=255
-        self.testset/=255
+        #self.trainset/=255
+        #self.testset/=255
     def simple_learn(self):
         tflearn.init_graph()
         net=tflearn.input_data(shape=[None,64,64,3])
@@ -127,7 +127,7 @@ class learner:
         imgprep = tflearn.data_preprocessing.ImagePreprocessing()
         imgprep.add_featurewise_zero_center()
         imgprep.add_featurewise_stdnorm()
-        network = tflearn.layers.core.input_data([None, 128, 128],dtype=np.float32)  # ,data_preprocessing=imgprep)
+        network = tflearn.layers.core.input_data([None, 128, 128],dtype=np.float32,data_preprocessing=imgprep)
         network = tflearn.reshape(network, new_shape=[-1])
         network = tflearn.reshape(network, new_shape=[-1,128,128,1])
         network = tflearn.layers.conv.conv_2d(network, 32, 5, activation='relu', regularizer="L2")
@@ -142,9 +142,10 @@ class learner:
         network = tflearn.layers.estimator.regression(network, optimizer='adam', loss='categorical_crossentropy',
                                                       learning_rate=.0001)
         self.network = network
+        return 0
         model = tflearn.DNN(network, tensorboard_verbose=2, checkpoint_path='first_test.tf1.ckpt')
         #model.load("Models/sam_dan.tfl")
-        model.fit(self.trainset, self.trainlabels, n_epoch=50, shuffle=True,
+        model.fit(self.trainset, self.trainlabels, n_epoch=3, shuffle=True,
                   validation_set=(self.testset, self.testlabels), show_metric=True, batch_size=100, snapshot_epoch=True,
                   run_id='First_test')
         model.save("Models/sam_dan.tfl")
@@ -168,14 +169,20 @@ class learner:
         network = tflearn.layers.estimator.regression(network, optimizer='adam', loss='categorical_crossentropy',
                                                       learning_rate=.0001)
         self.network = network
+        #return 0
         model = tflearn.DNN(network, tensorboard_verbose=2, checkpoint_path='first_test.tf1_2.ckpt')
         # model.load("Models/sam_dan.tfl")
-        model.fit(self.trainset, self.trainlabels, n_epoch=50, shuffle=True,
-                  validation_set=(self.testset, self.testlabels), show_metric=True, batch_size=100, snapshot_epoch=True,
+        #print(self.trainlabels)
+        model.fit(self.dataset, self.datalabels, n_epoch=50, shuffle=True,
+                  validation_set=.3, show_metric=True, batch_size=100, snapshot_epoch=True,
                   run_id='First_test')
         model.save("Models/sam_dan.tfl_2")
-    def run_model(self,modelname="Models/sam_dan.tfl"):
+
+    def run_model(self,modelname="Models/sam_dan.tfl_2"):
         self.unknownset=np.load("Data/dataset_test_grey.npy")
+        #imgprep = tflearn.data_preprocessing.ImagePreprocessing()
+        #imgprep.add_featurewise_zero_center()
+        #imgprep.add_featurewise_stdnorm()
         model=tflearn.DNN(self.network)
         model.load(modelname)
         outlist=[]
