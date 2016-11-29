@@ -5,6 +5,7 @@ import skimage,skimage.io,skimage.color,skimage.transform
 #from tflearn.layers.normalization import local_response_normalization
 #from tflearn.layers.estimator import regression
 #import sklearn
+from sklearn.utils import shuffle
 import pylab as plt
 import os
 import numpy as np
@@ -85,6 +86,7 @@ class learner:
         print(np.shape(self.dataset))
         self.unknownset=None
         print(self.datalabels)
+        self.dataset,self.datalabels=shuffle(self.dataset,self.datalabels)
         #self.validset=None
         #self.validlabels=None
         #self.trainset,self.testset,self.trainlabels,self.testlabels=cross_validation.train_test_split(self.dataset,self.datalabels,test_size=.2)
@@ -167,18 +169,18 @@ class learner:
         network = tflearn.layers.core.dropout(network, 0.5)
         network = tflearn.layers.core.fully_connected(network, 10, activation='softmax', regularizer="L1")
         network = tflearn.layers.estimator.regression(network, optimizer='adam', loss='categorical_crossentropy',
-                                                      learning_rate=.0001)
+                                                      learning_rate=.00001)
         self.network = network
-        #return 0
-        model = tflearn.DNN(network, tensorboard_verbose=2, checkpoint_path='first_test.tf1_2.ckpt')
+        return 0
+        model = tflearn.DNN(network, tensorboard_verbose=0, checkpoint_path='first_test.tf1_2.ckpt')
         # model.load("Models/sam_dan.tfl")
         #print(self.trainlabels)
-        model.fit(self.dataset, self.datalabels, n_epoch=50, shuffle=True,
+        model.fit(self.dataset, self.datalabels, n_epoch=100, shuffle=None,
                   validation_set=.3, show_metric=True, batch_size=100, snapshot_epoch=True,
                   run_id='First_test')
-        model.save("Models/sam_dan.tfl_2")
+        model.save("Models/sam_dan_2.tfl")
 
-    def run_model(self,modelname="Models/sam_dan.tfl_2"):
+    def run_model(self,modelname="Models/sam_dan_2.tfl"):
         self.unknownset=np.load("Data/dataset_test_grey.npy")
         #imgprep = tflearn.data_preprocessing.ImagePreprocessing()
         #imgprep.add_featurewise_zero_center()
@@ -223,7 +225,20 @@ def for_kaggle():
             #print(im.replace("\n","")+','+",".join([str(i) for i in testdata[n]]))
             n+=1
 
+def judge_test(fname="test_submission5.csv"):
+    d=pd.read_csv(fname)
+    with open("Data/testlist.txt",'r') as f:
+        testlist=f.readlines()
+    for i,j in d.iterrows():
+        imname=j['img']
+        im=skimage.io.imread("Data/imgs/test/" + imname)
+        plt.imshow(im)
+        print(j)
+        print(testlist[i])
+        plt.show()
+
 if __name__=="__main__":
+    judge_test()
     #resize_dataset()
     #convert_to_numpy()
     #convert_to_numpy_testset()
